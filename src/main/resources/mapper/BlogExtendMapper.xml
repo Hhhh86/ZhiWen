@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhiwen.mapper.BlogExtendMapper">
+    <resultMap id="TopTypeResultMap" type="com.zhiwen.pojo.TopType" extends="com.zhiwen.mapper.TypeMapper.BaseResultMap">
+    </resultMap>
+
+    <resultMap id="BlogResultMap" type="com.zhiwen.vo.BlogVo" extends="com.zhiwen.mapper.BlogMapper.ResultMapWithBLOBs">
+        <result column="nickname" jdbcType="VARCHAR" property="nickname"/>
+        <result column="head_portrait" jdbcType="VARCHAR" property="headPortrait"/>
+    </resultMap>
+
+    <!--首页展示博客信息列表-->
+    <select id="page" resultMap="BlogResultMap">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        a.blog_id,
+        a.user_id,
+        a.blog_desc,
+        a.recommend,
+        a.share_flag,
+        a.tag_id_str,
+        a.type_id,
+        a.create_time,
+        a.update_time,
+        a.first_picture_addr,
+        a.published,
+        a.blog_title,
+        a.blog_views,
+        a.appreciation_flag,
+        a.commentabled,
+        a.blog_comments,
+        b.nickname,
+        b.head_portrait
+        FROM
+        t_blog a,
+        t_user b
+        WHERE
+        a.user_id = b.user_id
+        AND a.del_flag = 0
+        ) a
+        <if test="_parameter != null">
+            <include refid="com.zhiwen.mapper.BlogMapper.Example_Where_Clause"/>
+        </if>
+        <if test="orderByClause != null">
+            order by ${orderByClause}
+        </if>
+    </select>
+
+    <!--查询指定数量的top类型的博客数-->
+    <select id="getTopTypeList" parameterType="java.lang.Integer"
+            resultMap="TopTypeResultMap">
+        SELECT a.type_id,
+               a.type_name,
+               (SELECT count(b.type_id) FROM t_blog b WHERE a.type_id = b.type_id and del_flag='0' and published='1')
+                   blogNums
+        FROM t_type a
+        ORDER BY blogNums DESC, a.type_id ASC
+        LIMIT #{topSize,jdbcType=INTEGER}
+    </select>
+
+    <!--查询指定数量的推荐的博客-->
+    <select id="getRecommendBlogs" parameterType="java.lang.Integer"
+            resultMap="com.zhiwen.mapper.BlogMapper.BaseResultMap">
+        select
+        <include refid="com.zhiwen.mapper.BlogMapper.Base_Column_List"/>
+        from t_blog
+        where del_flag='0' and published='1'
+        order by blog_views desc
+        LIMIT #{topSize,jdbcType=INTEGER}
+    </select>
+
+    <!--查询指定数量的最新博客-->
+    <select id="getLastUpdateBlogTop" parameterType="java.lang.Integer"
+            resultMap="com.zhiwen.mapper.BlogMapper.BaseResultMap">
+        select
+        <include refid="com.zhiwen.mapper.BlogMapper.Base_Column_List"/>
+        from t_blog
+        where published='1'
+        and del_flag='0'
+        order by blog_views desc
+        LIMIT #{topSize,jdbcType=INTEGER}
+    </select>
+
+    <!--博客详情查看-->
+    <select id="getBlogDeatil" resultMap="BlogResultMap">
+        SELECT a.blog_id,
+               a.user_id,
+               a.blog_desc,
+               a.recommend,
+               a.share_flag,
+               a.tag_id_str,
+               a.type_id,
+               a.create_time,
+               a.update_time,
+               a.first_picture_addr,
+               a.published,
+               a.blog_title,
+               a.blog_views,
+               a.appreciation_flag,
+               a.commentabled,
+               a.blog_comments,
+               a.blog_content,
+               a.blog_flag,
+               b.nickname,
+               b.head_portrait
+        FROM t_blog a,
+             t_user b
+        WHERE a.user_id = b.user_id
+          AND a.del_flag = 0
+          AND a.blog_id = #{blogId}
+    </select>
+
+    <!--查询博客包含的年份-->
+    <select id="findGroupYear" resultType="java.lang.String">
+        SELECT
+            date_format( create_time, '%Y' ) YEAR
+        FROM
+            t_blog
+        where del_flag='0'
+        and published='1'
+        <if test="userId!=null">
+        and user_id=#{userId}
+        </if>
+        GROUP BY
+            date_format( create_time, '%Y' )
+        ORDER BY
+            YEAR DESC
+    </select>
+
+    <!--根据年份查询博客数据-->
+    <select id="findByYear" resultMap="com.zhiwen.mapper.BlogMapper.BaseResultMap">
+        select
+        <include refid="com.zhiwen.mapper.BlogMapper.Base_Column_List" />
+        from t_blog
+        where date_format( create_time, '%Y' )=#{year}
+        and del_flag='0'
+        and published='1'
+        <if test="userId!=null">
+        and user_id=#{userId}
+        </if>
+    </select>
+
+    <!--主键查询（不带博客正文内容）-->
+    <select id="getBlogWithoutContent" resultMap="com.zhiwen.mapper.BlogMapper.BaseResultMap">
+        select
+        <include refid="com.zhiwen.mapper.BlogMapper.Base_Column_List"/>
+        from t_blog
+        where blog_id=#{blogId}
+    </select>
+
+    <!--获取指定数量用户排行榜-->
+    <select id="getTopUserList" resultType="com.zhiwen.pojo.TopUser">
+        SELECT
+            b.user_id userId,
+            b.nickname nickname,
+            b.head_portrait headPortrait,
+            COUNT( 1 ) blogNums
+        FROM
+            t_blog a,
+            t_user b
+        WHERE
+            a.user_id = b.user_id
+          AND a.del_flag = 0
+          AND a.published = 1
+        GROUP BY
+            b.user_id,
+            b.head_portrait
+        ORDER BY
+            blogNums DESC
+        LIMIT #{topSize,jdbcType=INTEGER}
+    </select>
+</mapper>

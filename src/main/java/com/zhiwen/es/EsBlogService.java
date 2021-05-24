@@ -1,0 +1,26 @@
+package com.zhiwen.es;
+
+
+import org.springframework.data.domain.Page;
+
+/**
+ * 搜索服务接口
+ *
+
+ * @date : 2020/1/19 16:34
+ */
+public interface EsBlogService {
+
+    /**
+     * 功能描述: 标题关键字搜索
+     *
+     * @param keyword 1
+     * @param pageNum 2
+     * @param pageSize 3
+     * @param userId 4
+     * @return org.springframework.data.domain.Page<com.zhiwen.es.EsBlogDo>
+     *
+     * @date 2020/2/2 10:27
+     **/
+    Page<EsBlogDo> search(String keyword, Integer pageNum, Integer pageSize,Integer userId);
+}

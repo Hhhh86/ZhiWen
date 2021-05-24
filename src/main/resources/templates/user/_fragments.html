@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:replace="${title}">我的主页</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/semantic-ui/2.2.4/semantic.min.css">
+    <link rel="stylesheet" href="../../static/lib/editormd/css/editormd.min.css"
+          th:href="@{/lib/editormd/css/editormd.min.css}">
+    <link rel="stylesheet" href="../static/css/me.css" th:href="@{/css/me.css}">
+    <style>
+        html { height: 96%; overflow: auto; }
+        body { min-height: 96%; }
+        footer {
+            position:absolute !important;;
+            width: 100%;
+            bottom: 0;
+        }
+    </style>
+</head>
+<body>
+
+<!--导航-->
+<nav th:fragment="menu(n)" class="ui inverted attached segment m-padded-tb-mini m-shadow-small">
+    <div class="ui container">
+        <div class="ui inverted secondary stackable menu">
+            <h2 class="ui teal header item">个人中心</h2>
+            <a href="#" th:href="@{/}" class="m-item item m-mobile-hide"
+               th:classappend="${n==1} ? 'active'"><i class="mini home icon"></i>&nbsp;回到首页</a>
+            <a href="#" th:href="@{/user}" class="m-item item m-mobile-hide"
+               th:classappend="${n==3} ? 'active'"><i class="mini info icon"></i>&nbsp;我的主页</a>
+            <a href="#" th:href="@{/user/blogs}" class="m-item item m-mobile-hide"
+               th:classappend="${n==2} ? 'active'"><i class="mini home icon"></i>&nbsp;我的博客</a>
+            <a href="#" th:href="@{/user/archives}" class="m-item item m-mobile-hide"
+               th:classappend="${n==4} ? 'active'"><i class="mini home icon"></i>&nbsp;我的归档</a>
+            <div class="right m-item m-mobile-hide menu">
+                <div class="ui dropdown  item">
+                    <div class="text">
+                        <img class="ui avatar image" src="https://unsplash.it/100/100?image=1005"
+                             th:src="@{${session.user.headPortrait}}">
+                        <span th:text="${session.user.nickname}">计春磊</span>
+                    </div>
+                    <i class="dropdown icon"></i>
+                    <div class="menu">
+                        <a href="#" th:href="@{/user/logout}" class="item">注销</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a href="#" class="ui menu toggle black icon button m-right-top m-mobile-show">
+        <i class="sidebar icon"></i>
+    </a>
+</nav>
+
+<!--导航-->
+
+
+<!--底部footer-->
+<footer th:fragment="footer" class="ui inverted vertical segment m-padded-tb-default">
+    <div id="netEasy-music" style="display:none;position: fixed;bottom: -45px;left: -10px;width: 0%;z-index:9999" >
+        <iframe frameborder="no" border="0" marginwidth="0"
+                marginheight="0" width=280 height=300
+                src="http://music.163.com/outchain/player?type=0&id=2508496324&auto=0">
+        </iframe>
+        <div id="weather-float-he"></div>
+    </div>
+    <div class="ui center aligned container">
+        <p class="m-text-thin m-text-spaced m-opacity-tiny" style="font-size: small">
+            <span id="htmer_time" style="color: #17fd40;font-size: small;font-weight: bolder"></span>
+            | Copyright © 2020-<span
+                th:text="${#dates.year(#dates.createNow())}">2021</span> 知文分享 Designed
+            by huangpeng <p class="m-text-thin m-text-spaced m-opacity-mini">这是有关知识分享的一个网站、会分享关于编程、写作、思考相关的任何内容，希望可以给来到这儿的人有所帮助...</p> </p>
+    </div>
+</footer>
+
+<!--js引用脚本-->
+<th:block th:fragment="script">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.2/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/semantic-ui/2.2.4/semantic.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/jquery.scrollto@2.1.2/jquery.scrollTo.min.js"></script>
+    <script src="../static/lib/prism/prism.js" th:src="@{/lib/prism/prism.js}"></script>
+    <script src="../static/lib/tocbot/tocbot.min.js" th:src="@{/lib/tocbot/tocbot.min.js}"></script>
+    <script src="../static/lib/qrcode/qrcode.min.js" th:src="@{/lib/qrcode/qrcode.min.js}"></script>
+    <script src="../static/lib/waypoints/jquery.waypoints.min.js"
+            th:src="@{/lib/waypoints/jquery.waypoints.min.js}"></script>
+    <script src="../../static/lib/editormd/editormd.min.js"
+            th:src="@{/lib/editormd/editormd.min.js}"></script>
+    <script>
+        $('#newblog-container').load(/*[[@{/footer/newblog}]]*/"/footer/newblog");
+    </script>
+    <script>
+        $('.ui.dropdown').dropdown({
+            on: 'hover'
+        });
+    </script>
+    <!--记录网站运行时间-->
+    <script>
+        function secondToDate(second) {
+            if (!second) {
+                return 0;
+            }
+            var time = new Array(0, 0, 0, 0, 0);
+            if (second >= 365 * 24 * 3600) {
+                time[0] = parseInt(second / (365 * 24 * 3600));
+                second %= 365 * 24 * 3600;
+            }
+            if (second >= 24 * 3600) {
+                time[1] = parseInt(second / (24 * 3600));
+                second %= 24 * 3600;
+            }
+            if (second >= 3600) {
+                time[2] = parseInt(second / 3600);
+                second %= 3600;
+            }
+            if (second >= 60) {
+                time[3] = parseInt(second / 60);
+                second %= 60;
+            }
+            if (second > 0) {
+                time[4] = second;
+            }
+            return time;
+        }
+
+        function setTime() {
+            /*此处为网站的创建时间*/
+            var create_time = Math.round(new Date(Date.UTC(2021, 0, 0, 0, 0, 0)).getTime() / 1000);
+            var timestamp = Math.round((new Date().getTime() + 8 * 60 * 60 * 1000) / 1000);
+            currentTime = secondToDate((timestamp - create_time));
+            currentTimeHtml = '本站已运行：' + currentTime[0] + '年' + currentTime[1] + '天'
+                + currentTime[2] + '时' + currentTime[3] + '分' + currentTime[4]
+                + '秒';
+            document.getElementById("htmer_time").innerHTML = currentTimeHtml;
+        }
+
+        setInterval(setTime, 1000);
+    </script>
+    <!--适配移动端和电脑端-->
+    <script type="text/javascript">
+        var browser = {
+            versions: function () {
+                var u = navigator.userAgent, app = navigator.appVersion;
+                return {     //移动终端浏览器版本信息
+                    trident: u.indexOf('Trident') > -1, //IE内核
+                    presto: u.indexOf('Presto') > -1, //opera内核
+                    webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+                    gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+                    mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+                    ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+                    android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或uc浏览器
+                    iPhone: u.indexOf('iPhone') > -1, //是否为iPhone或者QQHD浏览器
+                    iPad: u.indexOf('iPad') > -1, //是否iPad
+                    webApp: u.indexOf('Safari') == -1 //是否web应用程序，没有头部与底部
+                };
+            }(),
+            language: (navigator.browserLanguage || navigator.language).toLowerCase()
+        }
+        if (browser.versions.mobile) {
+            //执行移动端的相关代码
+            //alert("移动端");
+            //设置移动端不显示网易云音乐插件
+            onload = function () {
+                var MusicDivShow = document.getElementById('netEasy-music');//获取指定div中的元素
+                MusicDivShow.style.display = 'none';//控制层隐藏
+            };
+        }else if(!browser.versions.mobile){ //非移动端，动态加载js和div
+            //设置电脑端显示网易云音乐插件
+            onload = function () {
+                var MusicDivShow = document.getElementById('netEasy-music');//获取指定div中的元素
+                MusicDivShow.style.display = 'block';//控制层显示*/
+            };
+            var script1 = document.createElement('script');
+            script1.type = 'text/javascript';
+            script1.src = '\\js\\snow.js';
+
+            <!-- 天气预报 -->
+            WIDGET = {FID: 'EtgqPWMbdv'}
+            var script4 = document.createElement('script');
+            script4.type = 'text/javascript';
+            script4.src = 'https://apip.weatherdt.com/float/static/js/r.js?v=1111';
+
+            var script2 = document.createElement('script');
+            script2.type = 'text/javascript';
+            script2.src = '\\js\\click_show_text.js';
+
+            var script3 = document.createElement('script');
+            script3.type = 'text/javascript';
+            script3.color = '220,220,220';
+            script3.opacity = '0.7';//透明度
+            script3.zIndex = '-2';
+            script3.count = '200';
+            script3.src = '//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js';
+
+            /*天气*/
+            var script5 = document.createElement('script');
+            script5.type = 'text/javascript';
+            script5.src = '\\js\\autoload.js';
+
+            $('body').append(script5);
+            $('body').append(script1);
+            $('body').append(script4);
+            $('body').append(script2);
+            $('body').append(script3);
+        }
+    </script>
+    <!--博客美化效果-->
+    <!--单击显示文字-->
+    <script type="text/javascript" src="/js/click_show_text.js"></script>
+    <!--动态线条背景-->
+    <script type="text/javascript"
+            color="220,220,220" opacity='0.7' zIndex="-2" count="200" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js">
+    </script>
+    <!-- 雪花特效 -->
+    <script type="text/javascript" src="\js\snow.js"></script>
+    <script>
+        //点赞/取消点赞
+        function thumbsUp(blogId,obj) {
+            var title=$(obj).attr('title');
+            var flag=(title=="点赞");
+            $.ajax({
+                url: "/thumbsUp",    //请求的url地址
+                async: false,//请求是否异步，默认为异步，这也是ajax重要特性
+                data: {
+                    "blogId": blogId,
+                    "flag":flag
+                },    //参数值
+                type: "post",   //请求方式
+                success: function (data) {
+                    if(data=="success"){
+                        if(flag==true){
+                            $(obj).find('i').attr('class','thumbs up teal icon');
+                            $(obj).attr('title','取消点赞');
+                            var text=$(obj).find('span').text()*1+1;
+                            $(obj).find('span').html(text);
+                        }else{
+                            $(obj).find('i').attr('class','thumbs up outline icon');
+                            $(obj).attr('title','点赞');
+                            var text=$(obj).find('span').text()*1-1;
+                            $(obj).find('span').html(text);
+                        }
+                    }else if(data=="toLogin"){
+                        alert("您需要登录才能点赞！");
+                    }else{
+                        alert("系统错误！")
+                    }
+                }
+            });
+        }
+    </script>
+</th:block>
+
+</body>
+</html>
